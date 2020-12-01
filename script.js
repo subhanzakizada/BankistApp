@@ -103,14 +103,25 @@ const createUsernames = function(accounts) {
 createUsernames(accounts)
 
 
-
+// total balance on the right side of the page
 const displayBalance = function(account) {
     const balance = account.movements.reduce((acc, curr) => acc + curr, 1000)
-    labelBalance.textContent = `${balance} EUR`
-
-
-
+    labelBalance.textContent = `${balance}€`
 }
 
 displayBalance(account1)
 
+
+// left bottom - "IN", "OUT" and "INTEREST"
+const calcAndDisplaySummary = function(account) {
+    const balanceIn = account.movements.filter(mov => mov > 0).reduce((acc, curr) => acc + curr, 0)
+    labelSumIn.textContent = `${balanceIn}€`
+    
+    const balanceOut = account.movements.filter(mov => mov < 0).reduce((acc, curr) => acc + curr, 0)
+    labelSumOut.textContent = `${Math.abs(balanceOut)}€`
+    
+    const interest = account.movements.filter(mov => mov > 0).map(mov => mov * 0.012).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
+    labelSumInterest.textContent = `${interest}€`
+}
+
+calcAndDisplaySummary(account1)
