@@ -83,7 +83,7 @@ const displayMovements = function(movements) {
         const html = `
  <div class="movements__row">
           <div class="movements__type movements__type--${type}">
-            ${ind + 1}. ${movement}
+            ${ind + 1}. ${type}
           </div>
           <div class="movements__value">${movement}€</div>
         </div>
@@ -96,8 +96,21 @@ displayMovements(account1.movements)
 
 
 
+const createUsernames = function(accounts) {
+    accounts.forEach(account => account.username = account.owner.toLowerCase().split(' ').map(name => name[0]).join(''))
+}
+
+createUsernames(accounts)
 
 
 
+const displayBalance = function(account) {
+    const balance = account.movements.reduce((acc, curr) => acc + curr, 1000)
+    labelBalance.textContent = `${balance} EUR`
 
+
+
+}
+
+displayBalance(account1)
 
