@@ -75,10 +75,10 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-
-const displayMovements = function(movements) {
+// displays the movements - deposit, withdrawal etc.
+const displayMovements = function(account) {
     containerMovements.innerHTML = ''
-    movements.forEach((movement, ind) => {
+    account.movements.forEach((movement, ind) => {
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
@@ -92,7 +92,7 @@ const displayMovements = function(movements) {
     })
 }
 
-displayMovements(account1.movements)
+
 
 
 
@@ -105,11 +105,10 @@ createUsernames(accounts)
 
 // total balance on the right side of the page
 const displayBalance = function(account) {
-    const balance = account.movements.reduce((acc, curr) => acc + curr, 1000)
+    const balance = account.movements.reduce((acc, curr) => acc + curr, 0)
     labelBalance.textContent = `${balance}€`
 }
 
-displayBalance(account1)
 
 
 // left bottom - "IN", "OUT" and "INTEREST"
@@ -120,8 +119,30 @@ const calcAndDisplaySummary = function(account) {
     const balanceOut = account.movements.filter(mov => mov < 0).reduce((acc, curr) => acc + curr, 0)
     labelSumOut.textContent = `${Math.abs(balanceOut)}€`
     
-    const interest = account.movements.filter(mov => mov > 0).map(mov => mov * 0.012).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
+    const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
     labelSumInterest.textContent = `${interest}€`
 }
 
-calcAndDisplaySummary(account1)
+
+
+let currentAccount
+
+
+// what happens when you login to an account
+btnLogin.addEventListener('click', function(e) {
+    e.preventDefault()
+    currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value)
+    console.log(currentAccount)
+    
+    if(currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
+        inputLoginUsername.value = inputLoginPin.value = ''
+        inputLoginPin.blur() // removes the "focus" to the element
+        inputLoginUsername.blur() 
+        labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
+        displayMovements(currentAccount)
+        displayBalance(currentAccount)
+        calcAndDisplaySummary(currentAccount)
+        containerApp.style.opacity = 100
+    }    
+})
+
