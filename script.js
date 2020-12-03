@@ -1,5 +1,5 @@
 'use strict';
-
+//added transfer logic
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // BANKIST APP
@@ -75,10 +75,10 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-
-const displayMovements = function(movements) {
+// displays the movements - deposit, withdrawal etc.
+const displayMovements = function(account) {
     containerMovements.innerHTML = ''
-    movements.forEach((movement, ind) => {
+    account.movements.forEach((movement, ind) => {
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
@@ -88,11 +88,11 @@ const displayMovements = function(movements) {
           <div class="movements__value">${movement}€</div>
         </div>
 `
-            containerMovements.insertAdjacentHTML('beforeend', html)
+            containerMovements.insertAdjacentHTML('afterbegin', html)
     })
 }
 
-displayMovements(account1.movements)
+
 
 
 
@@ -105,11 +105,11 @@ createUsernames(accounts)
 
 // total balance on the right side of the page
 const displayBalance = function(account) {
-    const balance = account.movements.reduce((acc, curr) => acc + curr, 1000)
-    labelBalance.textContent = `${balance}€`
+    account.balance = account.movements.reduce((acc, curr) => acc + curr, 0)
+    console.log(account.balance)
+    labelBalance.textContent = `${account.balance}€`
 }
 
-displayBalance(account1)
 
 
 // left bottom - "IN", "OUT" and "INTEREST"
@@ -120,8 +120,63 @@ const calcAndDisplaySummary = function(account) {
     const balanceOut = account.movements.filter(mov => mov < 0).reduce((acc, curr) => acc + curr, 0)
     labelSumOut.textContent = `${Math.abs(balanceOut)}€`
     
-    const interest = account.movements.filter(mov => mov > 0).map(mov => mov * 0.012).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
+    const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
     labelSumInterest.textContent = `${interest}€`
 }
 
-calcAndDisplaySummary(account1)
+
+const updateUI = function(account) {
+    displayMovements(account)
+    displayBalance(account)
+    calcAndDisplaySummary(account)
+}
+
+let currentAccount
+
+// what happens when you login to an account
+btnLogin.addEventListener('click', function(e) {
+    e.preventDefault()
+    currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value)
+    
+    if(currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
+        inputLoginUsername.value = inputLoginPin.value = ''
+        inputLoginPin.blur() // removes the "focus" to the element
+        inputLoginUsername.blur() 
+        labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
+        updateUI(currentAccount)
+        containerApp.style.opacity = 100
+    }    
+})
+
+
+
+// gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing
+btnTransfer.addEventListener('click', function(e) {
+    e.preventDefault()
+    const receiver = accounts.find(acc => acc.username === inputTransferTo.value)
+    const amount = Number(inputTransferAmount.value)
+    
+    inputTransferAmount.value = inputTransferTo.value = ''
+    inputTransferAmount.blur() // removes the "focusing" thing from the element
+    inputTransferTo.blur()
+    
+    if(receiver && receiver !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
+    console.log('valid transfer')
+        currentAccount.movements.push(-amount)
+        receiver.movements.push(amount)
+        updateUI(currentAccount)
+        
+    } else {
+        console.log('invalid transfer')
+    }
+    
+    
+})
+
+
+
+
+
+
+
+
