@@ -1,5 +1,5 @@
 'use strict';
-
+//added transfer logic
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // BANKIST APP
@@ -88,7 +88,7 @@ const displayMovements = function(account) {
           <div class="movements__value">${movement}€</div>
         </div>
 `
-            containerMovements.insertAdjacentHTML('beforeend', html)
+            containerMovements.insertAdjacentHTML('afterbegin', html)
     })
 }
 
@@ -105,8 +105,9 @@ createUsernames(accounts)
 
 // total balance on the right side of the page
 const displayBalance = function(account) {
-    const balance = account.movements.reduce((acc, curr) => acc + curr, 0)
-    labelBalance.textContent = `${balance}€`
+    account.balance = account.movements.reduce((acc, curr) => acc + curr, 0)
+    console.log(account.balance)
+    labelBalance.textContent = `${account.balance}€`
 }
 
 
@@ -124,25 +125,58 @@ const calcAndDisplaySummary = function(account) {
 }
 
 
+const updateUI = function(account) {
+    displayMovements(account)
+    displayBalance(account)
+    calcAndDisplaySummary(account)
+}
 
 let currentAccount
-
 
 // what happens when you login to an account
 btnLogin.addEventListener('click', function(e) {
     e.preventDefault()
     currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value)
-    console.log(currentAccount)
     
     if(currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
         inputLoginUsername.value = inputLoginPin.value = ''
         inputLoginPin.blur() // removes the "focus" to the element
         inputLoginUsername.blur() 
         labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
-        displayMovements(currentAccount)
-        displayBalance(currentAccount)
-        calcAndDisplaySummary(currentAccount)
+        updateUI(currentAccount)
         containerApp.style.opacity = 100
     }    
 })
+
+
+
+// gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing
+btnTransfer.addEventListener('click', function(e) {
+    e.preventDefault()
+    const receiver = accounts.find(acc => acc.username === inputTransferTo.value)
+    const amount = Number(inputTransferAmount.value)
+    
+    inputTransferAmount.value = inputTransferTo.value = ''
+    inputTransferAmount.blur() // removes the "focusing" thing from the element
+    inputTransferTo.blur()
+    
+    if(receiver && receiver !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
+    console.log('valid transfer')
+        currentAccount.movements.push(-amount)
+        receiver.movements.push(amount)
+        updateUI(currentAccount)
+        
+    } else {
+        console.log('invalid transfer')
+    }
+    
+    
+})
+
+
+
+
+
+
+
 
