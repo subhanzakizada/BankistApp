@@ -76,9 +76,10 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 /////////////////////////////////////////////////
 
 // displays the movements - deposit, withdrawal etc.
-const displayMovements = function(account) {
+const displayMovements = function(account, sort = false) {
+    const movs = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
     containerMovements.innerHTML = ''
-    account.movements.forEach((movement, ind) => {
+    movs.forEach((movement, ind) => {
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
@@ -106,7 +107,7 @@ createUsernames(accounts)
 // total balance on the right side of the page
 const displayBalance = function(account) {
     account.balance = account.movements.reduce((acc, curr) => acc + curr, 0)
-    console.log(account.balance)
+
     labelBalance.textContent = `${account.balance}€`
 }
 
@@ -161,16 +162,10 @@ btnTransfer.addEventListener('click', function(e) {
     inputTransferTo.blur()
     
     if(receiver && receiver !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
-    console.log('valid transfer')
         currentAccount.movements.push(-amount)
         receiver.movements.push(amount)
-        updateUI(currentAccount)
-        
-    } else {
-        console.log('invalid transfer')
-    }
-    
-    
+        updateUI(currentAccount)  
+    }   
 })
 
 
@@ -198,4 +193,16 @@ btnLoan.addEventListener('click', function(e) {
     
        }
     
+})
+
+let sorted = false
+btnSort.addEventListener('click', function(e) {
+    e.preventDefault()
+//    sorted === false ? true : false
+    if(sorted === false) {
+        sorted = true
+    } else{
+        sorted = false
+    }
+    displayMovements(currentAccount, sorted)
 })
