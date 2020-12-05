@@ -198,7 +198,6 @@ btnLoan.addEventListener('click', function(e) {
 let sorted = false
 btnSort.addEventListener('click', function(e) {
     e.preventDefault()
-//    sorted === false ? true : false
     if(sorted === false) {
         sorted = true
     } else{
