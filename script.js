@@ -87,17 +87,26 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-// displays the movements - deposit, withdrawal etc.
+// displays the movements - deposit, withdrawal etc. && the dates
 const displayMovements = function(account, sort = false) {
-    const movs = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
+    // displays the date under the "Current Balance"
+    const date = new Date()
+    labelDate.textContent = `${date.getMonth().toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`
+    
+    
+    // displaying movements
+    const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
     containerMovements.innerHTML = ''
-    movs.forEach((movement, ind) => {
+    movements.forEach((movement, ind) => {
+        const date = new Date(account.movementsDates[ind])
+        const displayingDate = `${date.getMonth().toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
           <div class="movements__type movements__type--${type}">
             ${ind + 1}. ${type}
           </div>
+          <div class="movements__date">${displayingDate}</div>
           <div class="movements__value">${movement.toFixed(2)}€</div>
         </div>
 `
@@ -107,8 +116,7 @@ const displayMovements = function(account, sort = false) {
 
 
 
-
-
+// creates usernames for every account by using their initial
 const createUsernames = function(accounts) {
     accounts.forEach(account => account.username = account.owner.toLowerCase().split(' ').map(name => name[0]).join(''))
 }
@@ -176,6 +184,7 @@ btnTransfer.addEventListener('click', function(e) {
     if(receiver && receiver !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
         currentAccount.movements.push(-amount)
         receiver.movements.push(amount)
+        currentAccount.movementsDates.push(new Date())
         updateUI(currentAccount)  
     }   
 })
@@ -201,10 +210,11 @@ btnLoan.addEventListener('click', function(e) {
     
     if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
         currentAccount.movements.push(Math.floor((amount)))
+        currentAccount.movementsDates.push(new Date())
         updateUI(currentAccount)
-    
-       }
-    
+    }
+    inputLoanAmount.value = ''
+
 })
 
 let sorted = false
@@ -217,3 +227,9 @@ btnSort.addEventListener('click', function(e) {
     }
     displayMovements(currentAccount, sorted)
 })
+
+
+
+
+
+
