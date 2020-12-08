@@ -89,12 +89,14 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-const formatDate = date => `${date.getMonth().toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`
+
 
 // displays the movements - deposit, withdrawal etc. && the dates
 const displayMovementsAndDates = function(account, sort = false) {
-    // displays the date under the "Current Balance"
-    const date = new Date()
+    // displays the date under the "Current Balance" 
+    const date = new Date()  
+    // ↓ internalization the date for obj's locale ↓
+    const formatDate = date => Intl.DateTimeFormat(account.locale).format(date)
     labelDate.textContent = formatDate(date)
       
 
@@ -181,7 +183,7 @@ btnLogin.addEventListener('click', function(e) {
 
 
 
-// gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing
+/* gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day */ 
 btnTransfer.addEventListener('click', function(e) {
     e.preventDefault()
     const receiver = accounts.find(acc => acc.username === inputTransferTo.value)
