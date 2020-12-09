@@ -90,6 +90,9 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 /////////////////////////////////////////////////
 
 
+// internalization the currencies
+const formatCurrency = (acc, val) =>  new Intl.NumberFormat(acc.locale, {style: 'currency',
+                                                                         currency: acc.currency}).format(val)
 
 // displays the movements - deposit, withdrawal etc. && the dates
 const displayMovementsAndDates = function(account, sort = false) {
@@ -123,7 +126,7 @@ const displayMovementsAndDates = function(account, sort = false) {
             ${ind + 1}. ${type}
           </div>
           <div class="movements__date">${displayingDate}</div>
-          <div class="movements__value">${movement.toFixed(2)}€</div>
+          <div class="movements__value">${formatCurrency(account, movement)}</div>
         </div>
 `
             containerMovements.insertAdjacentHTML('afterbegin', html)
@@ -142,7 +145,7 @@ createUsernames(accounts)
 const displayBalance = function(account) {
     account.balance = account.movements.reduce((acc, curr) => acc + curr, 0)
 
-    labelBalance.textContent = `${account.balance.toFixed(2)}€`
+    labelBalance.textContent = `${formatCurrency(account, account.balance)}`
 }
 
 // left bottom - "IN", "OUT" and "INTEREST"
@@ -183,7 +186,7 @@ btnLogin.addEventListener('click', function(e) {
 
 
 
-/* gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day */ 
+// gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day 
 btnTransfer.addEventListener('click', function(e) {
     e.preventDefault()
     const receiver = accounts.find(acc => acc.username === inputTransferTo.value)
