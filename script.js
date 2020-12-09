@@ -16,10 +16,10 @@ const account1 = {
     '2019-12-23T07:42:02.383Z',
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2020-12-08T14:11:59.604Z',
+    '2020-12-27T17:01:17.194Z',
+    '2020-12-11T23:36:17.929Z',
+    '2020-12-10T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -77,6 +77,8 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // LECTURES
 
+
+
 const currencies = new Map([
   ['USD', 'United States dollar'],
   ['EUR', 'Euro'],
@@ -87,19 +89,33 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
+
+
 // displays the movements - deposit, withdrawal etc. && the dates
-const displayMovements = function(account, sort = false) {
-    // displays the date under the "Current Balance"
-    const date = new Date()
-    labelDate.textContent = `${date.getMonth().toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`
-    
-    
-    // displaying movements
+const displayMovementsAndDates = function(account, sort = false) {
+    // displays the date under the "Current Balance" 
+    const date = new Date()  
+    // ↓ internalization the date for obj's locale ↓
+    const formatDate = date => Intl.DateTimeFormat(account.locale).format(date)
+    labelDate.textContent = formatDate(date)
+      
+
+    // displaying movements and "calcPassedDays"
     const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
     containerMovements.innerHTML = ''
-    movements.forEach((movement, ind) => {
-        const date = new Date(account.movementsDates[ind])
-        const displayingDate = `${date.getMonth().toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`
+    movements.forEach((movement, ind) => {        
+        
+        // calculates if the transaction happened within a week
+        const calcPassedDays = date => {
+            const passed = Math.round(Math.abs((date - new Date()) / 1000 / 60 / 60 / 24))
+            if(passed === 0) return 'TODAY'
+            else if(passed === 1) return 'YESTERDAY'
+            else if(passed <= 7) return `${passed} days ago`
+        }
+        // converting the ${obj.movementsDates[i]} to milliseconds 
+        const date = new Date(account.movementsDates[ind]) 
+        
+        const displayingDate = typeof calcPassedDays(date) === 'string' ? calcPassedDays(date) : formatDate(date)
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
@@ -113,8 +129,6 @@ const displayMovements = function(account, sort = false) {
             containerMovements.insertAdjacentHTML('afterbegin', html)
     })
 }
-
-
 
 // creates usernames for every account by using their initial
 const createUsernames = function(accounts) {
@@ -131,8 +145,6 @@ const displayBalance = function(account) {
     labelBalance.textContent = `${account.balance.toFixed(2)}€`
 }
 
-
-
 // left bottom - "IN", "OUT" and "INTEREST"
 const calcAndDisplaySummary = function(account) {
     const balanceIn = account.movements.filter(mov => mov > 0).reduce((acc, curr) => acc + curr, 0)
@@ -147,7 +159,7 @@ const calcAndDisplaySummary = function(account) {
 
 
 const updateUI = function(account) {
-    displayMovements(account)
+    displayMovementsAndDates(account)
     displayBalance(account)
     calcAndDisplaySummary(account)
 }
@@ -171,7 +183,7 @@ btnLogin.addEventListener('click', function(e) {
 
 
 
-// gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing
+/* gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day */ 
 btnTransfer.addEventListener('click', function(e) {
     e.preventDefault()
     const receiver = accounts.find(acc => acc.username === inputTransferTo.value)
@@ -225,11 +237,5 @@ btnSort.addEventListener('click', function(e) {
     } else{
         sorted = false
     }
-    displayMovements(currentAccount, sorted)
+    displayMovementsAndDates(currentAccount, sorted)
 })
-
-
-
-
-
-
