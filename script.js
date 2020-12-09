@@ -88,7 +88,7 @@ const currencies = new Map([
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
-
+let settingInt
 
 // internalization the currencies
 const formatCurrency = (acc, val) =>  new Intl.NumberFormat(acc.locale, {style: 'currency',
@@ -96,13 +96,22 @@ const formatCurrency = (acc, val) =>  new Intl.NumberFormat(acc.locale, {style: 
 
 // displays the movements - deposit, withdrawal etc. && the dates
 const displayMovementsAndDates = function(account, sort = false) {
+    clearInterval(settingInt) // gotta clear the interval every time login to an account from different one or weird bug appears
     // displays the date under the "Current Balance" 
     const date = new Date()  
-    // ↓ internalization the date for obj's locale ↓
-    const formatDate = date => Intl.DateTimeFormat(account.locale).format(date)
-    labelDate.textContent = formatDate(date)
-      
-
+    // ↓ internalization the date by checking obj's locale ↓
+    const formatDate = Intl.DateTimeFormat(account.locale).format(date)
+    
+    // gives you - hours, minutes, seconds
+    const formatHours = () => {
+        const date = new Date()
+          return Intl.DateTimeFormat(account.locale, {
+              hour:'numeric',
+              minute: 'numeric',
+              second: 'numeric'}).format(date)
+    } // live timer ↓ but execute 1 sec after the displayMovementsAndDates called
+    settingInt = setInterval(() => labelDate.textContent = formatDate + ' ' + formatHours(), 1000)
+    
     // displaying movements and "calcPassedDays"
     const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
     containerMovements.innerHTML = ''
@@ -118,7 +127,7 @@ const displayMovementsAndDates = function(account, sort = false) {
         // converting the ${obj.movementsDates[i]} to milliseconds 
         const date = new Date(account.movementsDates[ind]) 
         
-        const displayingDate = typeof calcPassedDays(date) === 'string' ? calcPassedDays(date) : formatDate(date)
+        const displayingDate = typeof calcPassedDays(date) === 'string' ? calcPassedDays(date) : formatDate
         const type = movement > 0 ? 'deposit' : 'withdrawal'
         const html = `
  <div class="movements__row">
@@ -126,7 +135,7 @@ const displayMovementsAndDates = function(account, sort = false) {
             ${ind + 1}. ${type}
           </div>
           <div class="movements__date">${displayingDate}</div>
-          <div class="movements__value">${formatCurrency(account, movement)}</div>
+          <div class="movements__value">${formatCurrency(account, movement)}€</div>
         </div>
 `
             containerMovements.insertAdjacentHTML('afterbegin', html)
@@ -175,15 +184,15 @@ btnLogin.addEventListener('click', function(e) {
     currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value)
     
     if(currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
+        updateUI(currentAccount)
         inputLoginUsername.value = inputLoginPin.value = ''
         inputLoginPin.blur() // removes the "focus" to the element
         inputLoginUsername.blur() 
         labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
-        updateUI(currentAccount)
         containerApp.style.opacity = 100
+        
     }    
 })
-
 
 
 // gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day 
@@ -213,7 +222,6 @@ btnClose.addEventListener('click', function(e) {
         const index = accounts.findIndex(acc => acc.username === currentAccount.username) 
         accounts.splice(index, 1)
         containerApp.style.opacity = 0
-        
     }
     
 })
