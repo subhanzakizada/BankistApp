@@ -88,6 +88,30 @@ const currencies = new Map([
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
+
+// interval variable
+let timer
+
+const startLogout = () => {
+    let time = 30
+    const timerLogic = () => {
+        let min = String(Math.floor(time / 60)).padStart(2, '0')
+        let sec = String(time % 60).padStart(2, '0')
+        labelTimer.textContent = `${min}:${sec}`
+        
+        // logging out when timer hits 00:00
+        if(time === 0) {
+            labelWelcome.textContent = `Log in to get started`
+            containerApp.style.opacity = 0
+            clearInterval(timer)
+        }
+        time--
+    }
+    timerLogic()
+    
+    timer = setInterval(() => timerLogic(), 1000)
+}
+
 let settingInt
 
 // internalization the currencies
@@ -109,8 +133,13 @@ const displayMovementsAndDates = function(account, sort = false) {
               hour:'numeric',
               minute: 'numeric',
               second: 'numeric'}).format(date)
-    } // live timer ↓ but execute 1 sec after the displayMovementsAndDates called
-    settingInt = setInterval(() => labelDate.textContent = formatDate + ' ' + formatHours(), 1000)
+    } // live timer ↓ 
+    settingInt = setInterval(() => updateDate(), 1000)
+    
+    // updating time at first and not after passing 1 sec ↑
+    const updateDate = (() => labelDate.textContent = formatDate + ' ' + formatHours())
+    updateDate()
+    
     
     // displaying movements and "calcPassedDays"
     const movements = sort ? account.movements.slice().sort((a, b) => a - b) : account.movements
@@ -149,7 +178,6 @@ const createUsernames = function(accounts) {
 
 createUsernames(accounts)
 
-
 // total balance on the right side of the page
 const displayBalance = function(account) {
     account.balance = account.movements.reduce((acc, curr) => acc + curr, 0)
@@ -160,15 +188,14 @@ const displayBalance = function(account) {
 // left bottom - "IN", "OUT" and "INTEREST"
 const calcAndDisplaySummary = function(account) {
     const balanceIn = account.movements.filter(mov => mov > 0).reduce((acc, curr) => acc + curr, 0)
-    labelSumIn.textContent = `${balanceIn}€`
+    labelSumIn.textContent = `${Math.round(balanceIn)}€`
     
     const balanceOut = account.movements.filter(mov => mov < 0).reduce((acc, curr) => acc + curr, 0)
-    labelSumOut.textContent = `${Math.abs(balanceOut)}€`
+    labelSumOut.textContent = `${Math.round(Math.abs(balanceOut))}€`
     
     const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).filter(mov => mov > 1).reduce((acc, curr) => acc + curr, 0)
-    labelSumInterest.textContent = `${interest}€`
+    labelSumInterest.textContent = `${Math.round(interest)}€`
 }
-
 
 const updateUI = function(account) {
     displayMovementsAndDates(account)
@@ -181,6 +208,8 @@ let currentAccount
 // what happens when you login to an account
 btnLogin.addEventListener('click', function(e) {
     e.preventDefault()
+    clearInterval(timer)
+    startLogout()
     currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value)
     
     if(currentAccount && currentAccount.pin === Number(inputLoginPin.value)) {
@@ -193,7 +222,6 @@ btnLogin.addEventListener('click', function(e) {
         
     }    
 })
-
 
 // gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day 
 btnTransfer.addEventListener('click', function(e) {
@@ -209,11 +237,11 @@ btnTransfer.addEventListener('click', function(e) {
         currentAccount.movements.push(-amount)
         receiver.movements.push(amount)
         currentAccount.movementsDates.push(new Date())
+        clearInterval(timer)
+        startLogout()
         updateUI(currentAccount)  
     }   
 })
-
-
 
 btnClose.addEventListener('click', function(e) {
     e.preventDefault()
@@ -222,8 +250,7 @@ btnClose.addEventListener('click', function(e) {
         const index = accounts.findIndex(acc => acc.username === currentAccount.username) 
         accounts.splice(index, 1)
         containerApp.style.opacity = 0
-    }
-    
+    }    
 })
 
 
@@ -234,10 +261,11 @@ btnLoan.addEventListener('click', function(e) {
     if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
         currentAccount.movements.push(Math.floor((amount)))
         currentAccount.movementsDates.push(new Date())
-        updateUI(currentAccount)
+        clearInterval(timer)
+        startLogout()
+        setTimeout(() => updateUI(currentAccount), 2000)
     }
     inputLoanAmount.value = ''
-
 })
 
 let sorted = false
