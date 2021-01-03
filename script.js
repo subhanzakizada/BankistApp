@@ -88,6 +88,7 @@ const account4 = {
 }
 
 const accounts = [account1, account2, account3, account4];
+const testAccounts = [account3, account4]
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -260,13 +261,19 @@ btnLogin.addEventListener('click', function (e) {
         inputLoginUsername.value = inputLoginPin.value = ''
         inputLoginPin.blur() // removes the "focus" to the element
         inputLoginUsername.blur()
-        if(currentAccount !== account3 && currentAccount !== account4)
-        labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
+        if (currentAccount !== account3 && currentAccount !== account4)
+            labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
         else labelWelcome.textContent = `Welcome, test account ${currentAccount.username.slice(-1)} `
         containerApp.style.opacity = 100
-
     }
+    
     checkAccountTest()
+    
+    // if any of the test accounts get deleted, textContext of the boxes no longer shows the username/password for the account
+    if(accounts.length !== 4) {
+        inputLoginUsername.value = ''
+        inputLoginPin.value = ''
+    }
 })
 
 // gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day 
@@ -292,11 +299,11 @@ btnTransfer.addEventListener('click', function (e) {
 btnClose.addEventListener('click', function (e) {
     e.preventDefault()
 
-    if (inputCloseUsername.value === currentAccount.username && Number(inputClosePin.value) === currentAccount.pin) {
+    if (currentAccount.username !== 'test1' && currentAccount.username !== 'test2' && inputCloseUsername.value === currentAccount.username && Number(inputClosePin.value) === currentAccount.pin) {
         const index = accounts.findIndex(acc => acc.username === currentAccount.username)
         accounts.splice(index, 1)
-        containerApp.style.opacity = 0
-    }
+    } else deleteTestAccounts()
+    containerApp.style.opacity = 0
 })
 
 
@@ -329,16 +336,37 @@ btnSort.addEventListener('click', function (e) {
 const initial = () => {
     inputLoginUsername.value = account3.username
     inputLoginPin.value = account3.pin
-} 
+}
 initial()
 
 // checks if the current account is test and changes the input for "transfer money" , "request loan" amd the login informations 
 const checkAccountTest = () => {
-    const other = currentAccount.username === 'test1' ? account4 : account3
-    const testAccount = () => {
-        inputLoginUsername.value = other.username
-        inputLoginPin.value = other.pin
-        inputTransferTo.value = other.username
-    }
+    if(currentAccount) { 
+        const other = currentAccount.username === 'test1' ? account4 : account3
+        const testAccount = () => {
+            inputLoginUsername.value = other.username
+            inputLoginPin.value = other.pin
+            inputTransferTo.value = other.username
+            inputClosePin.value = currentAccount.pin
+        }
     testAccount()
+    }
+}
+
+const deleteTestAccounts = () => {
+    if (currentAccount.username === 'test1') {
+        accounts.splice(-2, 1)
+        if(accounts.length === 3) {
+            inputLoginUsername.value = account4.username
+            inputLoginPin.value = account4.pin
+        }
+    } else {
+        accounts.splice(-1, 1)
+        if(accounts.length === 3) {
+            inputLoginUsername.value = account3.username
+            inputLoginPin.value = account3.pin
+        }
+    }
+    inputCloseUsername.value = ''
+    inputClosePin.value = ''
 }
