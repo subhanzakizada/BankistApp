@@ -47,7 +47,7 @@ const account2 = {
 
 // test account1
 const account3 = {
-    owner: 'Test Account 1',
+    owner: 't e s t 1',
     movements: [12000, 800, -210, 50, -1700, -1450, 1500, -2000],
     interestRate: 2.4,
     pin: 3333,
@@ -68,7 +68,7 @@ const account3 = {
 
 // test account2
 const account4 = {
-    owner: 'Test Account 2',
+    owner: 't e s t 2',
     movements: [-4000, 500, 850, 1400, -2100, 1245, -1000, 7000],
     interestRate: 2.1,
     pin: 4444,
@@ -119,8 +119,6 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // LECTURES
 
-// add resetting the timer when the mouse moves 
-
 const currencies = new Map([
   ['USD', 'United States dollar'],
   ['EUR', 'Euro'],
@@ -135,7 +133,7 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 let timer
 
 const startLogout = () => {
-    let time = 30
+    let time = 300
     const timerLogic = () => {
         let min = String(Math.floor(time / 60)).padStart(2, '0')
         let sec = String(time % 60).padStart(2, '0')
@@ -266,6 +264,7 @@ btnLogin.addEventListener('click', function (e) {
         containerApp.style.opacity = 100
 
     }
+    checkAccountTest()
 })
 
 // gotta fix the "interest" when the transaction is happening. add a transaction fees or remove the interest because it keeps increasing or limit the transactions can happen in a day 
@@ -323,3 +322,21 @@ btnSort.addEventListener('click', function (e) {
     }
     displayMovementsAndDates(currentAccount, sorted)
 })
+
+// initial commits
+const initial = () => {
+    inputLoginUsername.value = account3.username
+    inputLoginPin.value = account3.pin
+} 
+initial()
+
+// checks if the current account is test and changes the input for "transfer money" , "request loan" amd the login informations 
+const checkAccountTest = () => {
+    const other = currentAccount.username === 'test1' ? account4 : account3
+    const testAccount = () => {
+        inputLoginUsername.value = other.username
+        inputLoginPin.value = other.pin
+        inputTransferTo.value = other.username
+    }
+    testAccount()
+}
