@@ -261,9 +261,9 @@ btnLogin.addEventListener('click', function (e) {
         inputLoginUsername.value = inputLoginPin.value = ''
         inputLoginPin.blur() // removes the "focus" to the element
         inputLoginUsername.blur()
-        if (currentAccount !== account3 && currentAccount !== account4)
-            labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]} `
-        else labelWelcome.textContent = `Welcome, test account ${currentAccount.username.slice(-1)} `
+        if (currentAccount !== account3 && currentAccount !== account4) // not test accounts
+            labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]}`
+        else labelWelcome.textContent = `Welcome, Test Account ${currentAccount.username.slice(-1)}` // test accounts
         containerApp.style.opacity = 100
     }
     
